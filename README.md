@@ -1,5 +1,5 @@
 # clang-callgraph
-A tool which generate a call graph from a given C++ based on clang. It excludes
+A tool based on clang which generates a call graph from a given C++ codebase. It excludes
 calls to the standard library so that only what matters to your app is shown.
 
 # Usage
