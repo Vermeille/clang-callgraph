@@ -1,6 +1,5 @@
 # clang-callgraph
-A tool based on clang which generates a call graph from a given C++ codebase. It excludes
-calls to the standard library so that only what matters to your app is shown.
+A tool based on clang which generates a call graph from a given C++ codebase.
 
 # Usage
 
@@ -26,7 +25,7 @@ callgraph
 ```
 $ bear make
 <output omitted>
-$ python2 ~/oauth_krb5/clang-analyze.py compile_commands.json -I/usr/lib/llvm-3.8/lib/clang/3.8.0/include/
+$ clang-callgraph.py compile_commands.json -I/usr/lib/llvm-3.8/lib/clang/3.8.0/include/
 reading source files...
 /home/vermeille/CPAsim/src/module.cpp
 /home/vermeille/CPAsim/src/module/modulevalues.cpp
@@ -63,5 +62,33 @@ main(int, char **)
       Parser::EatChar(std::istream &, char)
       Parser::FuckSpaces(std::istream &)
       WireDecl::WireDecl(const std::string &, int)
+$ clang-callgraph.py compile_commands.json -x Parser:: -I/usr/lib/llvm-3.8/lib/clang/3.8.0/include/
+reading source files...
+/home/vermeille/CPAsim/src/module.cpp
+/home/vermeille/CPAsim/src/module/modulevalues.cpp
+/home/vermeille/CPAsim/src/main.cpp
+/home/vermeille/CPAsim/src/parser.cpp
+> main(int, char **)
+main(int, char **)
+  Module::BindUsagesToDef()
+    Module::BindUsagesToDef_Rec(Expr *)
+      Module::BindUsagesToDef_Rec(Expr *)
+        Module::BindUsagesToDef_Rec(Expr *)
+        Binop::lhs()
+        Module::BindUsagesToDef_Rec(Expr *)
+        Binop::rhs()
+        Module::BindUsagesToDef_Rec(Expr *)
+        Not::rhs()
+        WireUsage::name()
+        WireUsage::name()
+        WireUsage::SetDeclRef(WireDecl *)
+        WireUsage::IsUseValid()
+          WireDecl::size()
+          WireDecl::size()
+          WireDecl::size()
+        WireUsage::name()
+        WireUsage::index()
+        WireUsage::index()
+        WireDecl::size()
 ```
 
