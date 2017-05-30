@@ -87,13 +87,21 @@ def show_info(node, xfiles, xprefs, cur_fun=None):
     for c in node.get_children():
         show_info(c, xfiles, xprefs, cur_fun)
 
+def pretty_print(n):
+    v = ''
+    if n.is_virtual_method():
+        v = ' virtual'
+    if n.is_pure_virtual_method():
+        v = ' = 0'
+    return fully_qualified_pretty(n) + v
+
 def print_calls(fun_name, so_far, depth=0):
     if depth >= 15:
         print('...<too deep>...')
         return
     if fun_name in CALLGRAPH:
         for f in CALLGRAPH[fun_name]:
-            print('  ' * (depth + 1) + fully_qualified_pretty(f))
+            print('  ' * (depth + 1) + pretty_print(f))
             if f in so_far:
                 continue
             so_far.append(f)
