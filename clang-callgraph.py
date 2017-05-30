@@ -19,7 +19,7 @@ callgraph
 """
 
 CALLGRAPH = defaultdict(list)
-FULLNAMES = defaultdict(list)
+FULLNAMES = defaultdict(set)
 
 def get_diag_info(diag):
     return { 'severity' : diag.severity,
@@ -70,14 +70,14 @@ def show_info(node, xfiles, xprefs, cur_fun=None):
     if node.kind == CursorKind.FUNCTION_TEMPLATE:
         if not is_excluded(node, xfiles, xprefs):
             cur_fun = node
-            FULLNAMES[fully_qualified(cur_fun)].append(
+            FULLNAMES[fully_qualified(cur_fun)].add(
                     fully_qualified_pretty(cur_fun))
 
     if node.kind == CursorKind.CXX_METHOD or \
             node.kind == CursorKind.FUNCTION_DECL:
         if not is_excluded(node, xfiles, xprefs):
             cur_fun = node
-            FULLNAMES[fully_qualified(cur_fun)].append(
+            FULLNAMES[fully_qualified(cur_fun)].add(
                     fully_qualified_pretty(cur_fun))
 
     if node.kind == CursorKind.CALL_EXPR:
@@ -165,7 +165,7 @@ def main():
             break
         if fun in CALLGRAPH:
             print(fun)
-            print_calls(fun, [])
+            print_calls(fun, list())
         else:
             print('matching:')
             for f, ff in FULLNAMES.iteritems():
