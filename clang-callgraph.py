@@ -9,7 +9,7 @@ import json
 
 """
 Dumps a callgraph of a function in a codebase
-usage: callgraph.py file.cpp|compile_commands.json [extra clang args...]
+usage: callgraph.py file.cpp|compile_commands.json [-x exclude-list] [extra clang args...]
 The easiest way to generate the file compile_commands.json for any make based
 compilation chain is to use Bear and recompile with `bear make`.
 
@@ -50,28 +50,42 @@ def fully_qualified_pretty(c):
             return res + '::' + c.displayname
         return c.displayname
 
-def show_info(node, cur_fun=None):
+def is_excluded(node, xfiles, xprefs):
+    if not node.extent.start.file:
+        return False
+
+    for xf in xfiles:
+        if node.extent.start.file.name.startswith(xf):
+            return True
+
+    fqp = fully_qualified_pretty(node)
+
+    for xp in xprefs:
+        if fqp.startswith(xp):
+            return True
+
+    return False
+
+def show_info(node, xfiles, xprefs, cur_fun=None):
     if node.kind == CursorKind.FUNCTION_TEMPLATE:
-        if not node.extent.start.file.name.startswith('/usr'):
+        if not is_excluded(node, xfiles, xprefs):
             cur_fun = node
             FULLNAMES[fully_qualified(cur_fun)].append(
                     fully_qualified_pretty(cur_fun))
 
     if node.kind == CursorKind.CXX_METHOD or \
             node.kind == CursorKind.FUNCTION_DECL:
-        if not node.extent.start.file.name.startswith('/usr'):
+        if not is_excluded(node, xfiles, xprefs):
             cur_fun = node
             FULLNAMES[fully_qualified(cur_fun)].append(
                     fully_qualified_pretty(cur_fun))
 
     if node.kind == CursorKind.CALL_EXPR:
-        if node.referenced and \
-            node.referenced.extent.start.file and \
-            not node.referenced.extent.start.file.name.startswith('/usr'):
-                CALLGRAPH[fully_qualified_pretty(cur_fun)].append(node.referenced)
+        if node.referenced and not is_excluded(node.referenced, xfiles, xprefs):
+            CALLGRAPH[fully_qualified_pretty(cur_fun)].append(node.referenced)
 
     for c in node.get_children():
-        show_info(c, cur_fun)
+        show_info(c, xfiles, xprefs, cur_fun)
 
 def print_calls(fun_name, so_far, depth=0):
     if depth >= 15:
@@ -95,18 +109,44 @@ def read_compile_commands(filename):
     else:
         return [{'command': '', 'file': filename}]
 
+def read_args(args):
+    db = None
+    clang_args = []
+    excluded_prefixes = []
+    excluded_paths = ['/usr']
+    i = 0
+    while i < len(args):
+        if args[i] == '-x':
+            i += 1
+            excluded_prefixes = args[i].split(',')
+        elif args[i] == '-p':
+            i += 1
+            excluded_paths = args[i].split(',')
+        elif args[i][0] == '-':
+            clang_args.append(args[i])
+        else:
+            db = args[i]
+        i += 1
+    return {'db': db,
+            'clang_args': clang_args,
+            'excluded_prefixes': excluded_prefixes,
+            'excluded_paths': excluded_paths}
+
+
 def main():
     if len(sys.argv) < 2:
         print('usage: ' + sys.argv[0] + ' file.cpp|compile_database.json '
                 '[extra clang args...]')
         return
 
+    cfg = read_args(sys.argv)
+
     print('reading source files...')
-    for cmd in read_compile_commands(sys.argv[1]):
+    for cmd in read_compile_commands(cfg['db']):
         index = Index.create()
         c = [x for x in cmd['command'].split()
                 if x.startswith('-I') or x.startswith('-std=') or
-                x.startswith('-D')] + sys.argv[2:]
+                x.startswith('-D')] + cfg['clang_args']
         tu = index.parse(cmd['file'], c)
         print(cmd['file'])
         if not tu:
@@ -117,7 +157,7 @@ def main():
                 print(' '.join(c))
                 pprint(('diags', map(get_diag_info, tu.diagnostics)))
                 return
-        show_info(tu.cursor)
+        show_info(tu.cursor, cfg['excluded_paths'], cfg['excluded_prefixes'])
 
     while True:
         fun = raw_input('> ')

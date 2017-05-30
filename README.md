@@ -4,7 +4,15 @@ calls to the standard library so that only what matters to your app is shown.
 
 # Usage
 
-`./clang-callgraph.py file.cpp|compile_commands.json [extra clang args...]`
+`./clang-callgraph.py file.cpp|compile_commands.json [options] [extra clang args...]`
+
+Understood `options` are:
+* `-x name1,name2`: a coma separated list of excluded prefixes, like
+  `std::,boost::`. All symbols starting with one of those will be hidden in the
+  callgraph.
+* `-p path1,path2`: a coma separated list of excluded prefixes, like
+  `/usr`. All symbols defined or used in files whose name starts with of those
+  will be hidden in the callgraph.
 
 The easiest way to generate the file compile\_commands.json for any make based
 compilation chain is to use Bear and recompile with `bear make`.
