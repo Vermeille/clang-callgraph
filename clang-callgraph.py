@@ -5,8 +5,6 @@ from clang.cindex import CursorKind, Index, CompilationDatabase
 from collections import defaultdict
 import sys
 import json
-
-
 """
 Dumps a callgraph of a function in a codebase
 usage: callgraph.py file.cpp|compile_commands.json [-x exclude-list] [extra clang args...]
@@ -21,12 +19,16 @@ callgraph
 CALLGRAPH = defaultdict(list)
 FULLNAMES = defaultdict(set)
 
+
 def get_diag_info(diag):
-    return { 'severity' : diag.severity,
-             'location' : diag.location,
-             'spelling' : diag.spelling,
-             'ranges' : diag.ranges,
-             'fixits' : diag.fixits }
+    return {
+        'severity': diag.severity,
+        'location': diag.location,
+        'spelling': diag.spelling,
+        'ranges': diag.ranges,
+        'fixits': diag.fixits
+    }
+
 
 def fully_qualified(c):
     if c is None:
@@ -39,6 +41,7 @@ def fully_qualified(c):
             return res + '::' + c.spelling
         return c.spelling
 
+
 def fully_qualified_pretty(c):
     if c is None:
         return ''
@@ -49,6 +52,7 @@ def fully_qualified_pretty(c):
         if res != '':
             return res + '::' + c.displayname
         return c.displayname
+
 
 def is_excluded(node, xfiles, xprefs):
     if not node.extent.start.file:
@@ -66,19 +70,20 @@ def is_excluded(node, xfiles, xprefs):
 
     return False
 
+
 def show_info(node, xfiles, xprefs, cur_fun=None):
     if node.kind == CursorKind.FUNCTION_TEMPLATE:
         if not is_excluded(node, xfiles, xprefs):
             cur_fun = node
             FULLNAMES[fully_qualified(cur_fun)].add(
-                    fully_qualified_pretty(cur_fun))
+                fully_qualified_pretty(cur_fun))
 
     if node.kind == CursorKind.CXX_METHOD or \
             node.kind == CursorKind.FUNCTION_DECL:
         if not is_excluded(node, xfiles, xprefs):
             cur_fun = node
             FULLNAMES[fully_qualified(cur_fun)].add(
-                    fully_qualified_pretty(cur_fun))
+                fully_qualified_pretty(cur_fun))
 
     if node.kind == CursorKind.CALL_EXPR:
         if node.referenced and not is_excluded(node.referenced, xfiles, xprefs):
@@ -87,6 +92,7 @@ def show_info(node, xfiles, xprefs, cur_fun=None):
     for c in node.get_children():
         show_info(c, xfiles, xprefs, cur_fun)
 
+
 def pretty_print(n):
     v = ''
     if n.is_virtual_method():
@@ -94,6 +100,7 @@ def pretty_print(n):
     if n.is_pure_virtual_method():
         v = ' = 0'
     return fully_qualified_pretty(n) + v
+
 
 def print_calls(fun_name, so_far, depth=0):
     if depth >= 15:
@@ -110,12 +117,14 @@ def print_calls(fun_name, so_far, depth=0):
             else:
                 print_calls(fully_qualified(f), so_far, depth + 1)
 
+
 def read_compile_commands(filename):
     if filename.endswith('.json'):
         with open(filename) as compdb:
             return json.load(compdb)
     else:
         return [{'command': '', 'file': filename}]
+
 
 def read_args(args):
     db = None
@@ -135,16 +144,18 @@ def read_args(args):
         else:
             db = args[i]
         i += 1
-    return {'db': db,
-            'clang_args': clang_args,
-            'excluded_prefixes': excluded_prefixes,
-            'excluded_paths': excluded_paths}
+    return {
+        'db': db,
+        'clang_args': clang_args,
+        'excluded_prefixes': excluded_prefixes,
+        'excluded_paths': excluded_paths
+    }
 
 
 def main():
     if len(sys.argv) < 2:
         print('usage: ' + sys.argv[0] + ' file.cpp|compile_database.json '
-                '[extra clang args...]')
+              '[extra clang args...]')
         return
 
     cfg = read_args(sys.argv)
@@ -152,9 +163,10 @@ def main():
     print('reading source files...')
     for cmd in read_compile_commands(cfg['db']):
         index = Index.create()
-        c = [x for x in cmd['command'].split()
-                if x.startswith('-I') or x.startswith('-std=') or
-                x.startswith('-D')] + cfg['clang_args']
+        c = [
+            x for x in cmd['command'].split()
+            if x.startswith('-I') or x.startswith('-std=') or x.startswith('-D')
+        ] + cfg['clang_args']
         tu = index.parse(cmd['file'], c)
         print(cmd['file'])
         if not tu:
@@ -181,6 +193,6 @@ def main():
                     for fff in ff:
                         print(fff)
 
+
 if __name__ == '__main__':
     main()
-
