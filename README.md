@@ -6,10 +6,10 @@ A tool based on clang which generates a call graph from a given C++ codebase.
 `./clang-callgraph.py file.cpp|compile_commands.json [options] [extra clang args...]`
 
 Understood `options` are:
-* `-x name1,name2`: a coma separated list of excluded prefixes, like
+* `-x name1,name2`: a comma separated list of excluded prefixes, like
   `std::,boost::`. All symbols starting with one of those will be hidden in the
   callgraph.
-* `-p path1,path2`: a coma separated list of excluded prefixes, like
+* `-p path1,path2`: a comma separated list of excluded prefixes, like
   `/usr`. All symbols defined or used in files whose name starts with of those
   will be hidden in the callgraph.
 
@@ -25,7 +25,7 @@ callgraph
 ```
 $ bear make
 <output omitted>
-$ clang-callgraph.py compile_commands.json -I/usr/lib/llvm-3.8/lib/clang/3.8.0/include/
+$ clang-callgraph.py compile_commands.json -p /usr/lib/llvm-3.8/lib/clang/3.8.0/include/
 reading source files...
 /home/vermeille/CPAsim/src/module.cpp
 /home/vermeille/CPAsim/src/module/modulevalues.cpp
@@ -62,7 +62,7 @@ main(int, char **)
       Parser::EatChar(std::istream &, char)
       Parser::FuckSpaces(std::istream &)
       WireDecl::WireDecl(const std::string &, int)
-$ clang-callgraph.py compile_commands.json -x Parser:: -I/usr/lib/llvm-3.8/lib/clang/3.8.0/include/
+$ clang-callgraph.py compile_commands.json -x Parser:: -p /usr/lib/llvm-3.8/lib/clang/3.8.0/include/
 reading source files...
 /home/vermeille/CPAsim/src/module.cpp
 /home/vermeille/CPAsim/src/module/modulevalues.cpp
