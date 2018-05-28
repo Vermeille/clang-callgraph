@@ -14,7 +14,8 @@ Understood `options` are:
   will be hidden in the callgraph.
 
 The easiest way to generate the file compile\_commands.json for any make based
-compilation chain is to use Bear and recompile with `bear make`.
+compilation chain is to use [Bear](https://github.com/rizsotto/Bear) and recompile
+with `bear make`.
 
 When running the python script, after parsing all the codebase, you are
 prompted to type in the function's name for which you wan to obtain the
