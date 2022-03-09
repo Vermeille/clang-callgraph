@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 from pprint import pprint
 from clang.cindex import CursorKind, Index, CompilationDatabase
@@ -25,8 +25,8 @@ def get_diag_info(diag):
         'severity': diag.severity,
         'location': diag.location,
         'spelling': diag.spelling,
-        'ranges': diag.ranges,
-        'fixits': diag.fixits
+        'ranges': list(diag.ranges),
+        'fixits': list(diag.fixits)
     }
 
 
@@ -175,7 +175,7 @@ def main():
         for d in tu.diagnostics:
             if d.severity == d.Error or d.severity == d.Fatal:
                 print(' '.join(c))
-                pprint(('diags', map(get_diag_info, tu.diagnostics)))
+                pprint(('diags', list(map(get_diag_info, tu.diagnostics))))
                 return
         show_info(tu.cursor, cfg['excluded_paths'], cfg['excluded_prefixes'])
 
