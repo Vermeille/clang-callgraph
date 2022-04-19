@@ -180,7 +180,7 @@ def main():
         show_info(tu.cursor, cfg['excluded_paths'], cfg['excluded_prefixes'])
 
     while True:
-        fun = raw_input('> ')
+        fun = input('> ')
         if not fun:
             break
         if fun in CALLGRAPH:
@@ -188,7 +188,7 @@ def main():
             print_calls(fun, list())
         else:
             print('matching:')
-            for f, ff in FULLNAMES.iteritems():
+            for f, ff in FULLNAMES.items():
                 if f.startswith(fun):
                     for fff in ff:
                         print(fff)
