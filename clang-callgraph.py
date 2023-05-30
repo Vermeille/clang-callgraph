@@ -152,25 +152,23 @@ def read_args(args):
     }
 
 
-def main():
-    if len(sys.argv) < 2:
-        print('usage: ' + sys.argv[0] + ' file.cpp|compile_database.json '
-              '[extra clang args...]')
-        return
+def keep_arg(x) -> bool:
+    keep_this = x.startswith('-I') or x.startswith('-std=') or x.startswith('-D')
+    return keep_this
 
-    cfg = read_args(sys.argv)
 
+def analyze_source_files(cfg):
     print('reading source files...')
     for cmd in read_compile_commands(cfg['db']):
         index = Index.create()
         c = [
             x for x in cmd['command'].split()
-            if x.startswith('-I') or x.startswith('-std=') or x.startswith('-D')
+            if keep_arg(x)
         ] + cfg['clang_args']
         tu = index.parse(cmd['file'], c)
         print(cmd['file'])
         if not tu:
-            parser.error("unable to load input")
+            print("unable to load input")
 
         for d in tu.diagnostics:
             if d.severity == d.Error or d.severity == d.Fatal:
@@ -179,19 +177,36 @@ def main():
                 return
         show_info(tu.cursor, cfg['excluded_paths'], cfg['excluded_prefixes'])
 
+
+def print_callgraph(fun):
+    if fun in CALLGRAPH:
+        print(fun)
+        print_calls(fun, list())
+    else:
+        print('matching:')
+        for f, ff in FULLNAMES.items():
+            if f.startswith(fun):
+                for fff in ff:
+                    print(fff)
+
+
+def ask_and_print_callgraph():
     while True:
         fun = input('> ')
         if not fun:
             break
-        if fun in CALLGRAPH:
-            print(fun)
-            print_calls(fun, list())
-        else:
-            print('matching:')
-            for f, ff in FULLNAMES.items():
-                if f.startswith(fun):
-                    for fff in ff:
-                        print(fff)
+        print_callgraph(fun)
+
+
+def main():
+    if len(sys.argv) < 2:
+        print('usage: ' + sys.argv[0] + ' file.cpp|compile_database.json '
+              '[extra clang args...]')
+        return
+
+    cfg = read_args(sys.argv)
+    analyze_source_files(cfg)
+    ask_and_print_callgraph()
 
 
 if __name__ == '__main__':
