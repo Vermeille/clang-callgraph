@@ -12,10 +12,19 @@ Understood `options` are:
 * `-p path1,path2`: a comma separated list of excluded prefixes, like
   `/usr`. All symbols defined or used in files whose name starts with one of those
   will be hidden in the callgraph.
+* `--cfg config_file`: Retrieve additional configuration from a config file.
 * `--lookup function_name`: Directly lookup the given function and print its callgraph
   instead of asking the user to type a function name.
 
 For more details look at the [example](#Example) provided.
+
+## Configuration File
+A configuration file can be used for options that don't depend on the source project to be analysed.
+This way it makes command lines shorter.
+The format used is YAML and may contain the following entries :
+* `excluded_prefixes`: same as the -x option
+* `excluded_paths`: same as the -p option
+* `clang_args`: any additional clang args
 
 ## Dependencies
 This script is based on Python 3, therefore a compatible interpreter is needed.<br/>
@@ -112,3 +121,14 @@ main(int, char **)
         WireDecl::size()
 ```
 
+Configuration file example :
+callgraph.yml:
+```
+excluded_prefixes:
+  - 'std::'
+excluded_paths:
+  - /usr/include
+  - /usr/lib/llvm-14/lib/clang/14.0.0/include/
+clang_args:
+  - '-I/usr/lib/gcc/x86_64-redhat-linux/12/include'
+```
