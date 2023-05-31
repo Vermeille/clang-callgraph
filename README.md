@@ -10,8 +10,10 @@ Understood `options` are:
   `std::,boost::`. All symbols starting with one of those will be hidden in the
   callgraph.
 * `-p path1,path2`: a comma separated list of excluded prefixes, like
-  `/usr`. All symbols defined or used in files whose name starts with of those
+  `/usr`. All symbols defined or used in files whose name starts with one of those
   will be hidden in the callgraph.
+* `--lookup function_name`: Directly lookup the given function and print its callgraph
+  instead of asking the user to type a function name.
 
 For more details look at the [example](#Example) provided.
 
