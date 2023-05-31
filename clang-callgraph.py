@@ -131,6 +131,7 @@ def read_args(args):
     clang_args = []
     excluded_prefixes = []
     excluded_paths = ['/usr']
+    lookup = None
     i = 0
     while i < len(args):
         if args[i] == '-x':
@@ -139,6 +140,9 @@ def read_args(args):
         elif args[i] == '-p':
             i += 1
             excluded_paths = args[i].split(',')
+        elif args[i] == '--lookup':
+            i += 1
+            lookup = args[i]
         elif args[i][0] == '-':
             clang_args.append(args[i])
         else:
@@ -148,7 +152,9 @@ def read_args(args):
         'db': db,
         'clang_args': clang_args,
         'excluded_prefixes': excluded_prefixes,
-        'excluded_paths': excluded_paths
+        'excluded_paths': excluded_paths,
+        'lookup': lookup,
+        'ask': (lookup is None)
     }
 
 
@@ -206,7 +212,11 @@ def main():
 
     cfg = read_args(sys.argv)
     analyze_source_files(cfg)
-    ask_and_print_callgraph()
+
+    if cfg['lookup']:
+        print_callgraph(cfg['lookup'])
+    if cfg['ask']:
+        ask_and_print_callgraph()
 
 
 if __name__ == '__main__':
