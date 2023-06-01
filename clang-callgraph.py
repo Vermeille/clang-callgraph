@@ -5,6 +5,7 @@ from clang.cindex import CursorKind, Index, CompilationDatabase
 from collections import defaultdict
 import sys
 import json
+import yaml
 """
 Dumps a callgraph of a function in a codebase
 usage: callgraph.py file.cpp|compile_commands.json [-x exclude-list] [extra clang args...]
@@ -130,16 +131,20 @@ def read_args(args):
     db = None
     clang_args = []
     excluded_prefixes = []
-    excluded_paths = ['/usr']
+    excluded_paths = []
+    config_filename = None
     lookup = None
     i = 0
     while i < len(args):
         if args[i] == '-x':
             i += 1
-            excluded_prefixes = args[i].split(',')
+            excluded_prefixes += args[i].split(',')
         elif args[i] == '-p':
             i += 1
-            excluded_paths = args[i].split(',')
+            excluded_paths += args[i].split(',')
+        elif args[i] == '--cfg':
+            i += 1
+            config_filename = args[i]
         elif args[i] == '--lookup':
             i += 1
             lookup = args[i]
@@ -148,14 +153,28 @@ def read_args(args):
         else:
             db = args[i]
         i += 1
+
+    if len(excluded_paths) == 0:
+        excluded_paths.append('/usr')
+
     return {
         'db': db,
         'clang_args': clang_args,
         'excluded_prefixes': excluded_prefixes,
         'excluded_paths': excluded_paths,
+        'config_filename': config_filename,
         'lookup': lookup,
         'ask': (lookup is None)
     }
+
+
+def load_config_file(cfg):
+    if cfg['config_filename']:
+        with open(cfg['config_filename'], 'r') as yamlfile:
+            data = yaml.load(yamlfile, Loader=yaml.FullLoader)
+            cfg['clang_args'] += data['clang_args']
+            cfg['excluded_prefixes'] += data['excluded_prefixes']
+            cfg['excluded_paths'] += data['excluded_paths']
 
 
 def keep_arg(x) -> bool:
@@ -211,6 +230,8 @@ def main():
         return
 
     cfg = read_args(sys.argv)
+    load_config_file(cfg)
+
     analyze_source_files(cfg)
 
     if cfg['lookup']:
