@@ -1,9 +1,15 @@
 # clang-callgraph
 A Python 3 script based on clang which generates a call graph from a given C++ codebase.
 
+## Installation
+Clone the repository, navigate to the repository folder and install it as a Python package:
+```
+pip install .
+```
+
 ## Usage
 This is the general script usage:<br/>
-`./clang-callgraph.py file.cpp|compile_commands.json [options] [extra clang args...]`
+`clang-callgraph file.cpp|compile_commands.json [options] [extra clang args...]`
 
 Understood `options` are:
 * `-x name1,name2`: a comma separated list of excluded prefixes, like
@@ -52,7 +58,7 @@ When running the python script, after parsing all the codebase, you are
 prompted to type in the function's name for which you want to obtain the
 callgraph:
 ```
-$ clang-callgraph.py compile_commands.json -p /usr/lib/llvm-14/lib/clang/14.0.0/include/
+$ clang-callgraph compile_commands.json -p /usr/lib/llvm-14/lib/clang/14.0.0/include/
 reading source files...
 /home/vermeille/CPAsim/src/module.cpp
 /home/vermeille/CPAsim/src/module/modulevalues.cpp
@@ -91,7 +97,7 @@ main(int, char **)
       WireDecl::WireDecl(const std::string &, int)
 ```
 ```
-$ clang-callgraph.py compile_commands.json -x Parser:: -p /usr/lib/llvm-14/lib/clang/14.0.0/include/
+$ clang-callgraph compile_commands.json -x Parser:: -p /usr/lib/llvm-14/lib/clang/14.0.0/include/
 reading source files...
 /home/vermeille/CPAsim/src/module.cpp
 /home/vermeille/CPAsim/src/module/modulevalues.cpp

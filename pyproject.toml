@@ -1,0 +1,19 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "clang-callgraph"
+version = "0.1.0"
+description = "A Python script to generate call graphs from C++ codebases using Clang."
+authors = ["Guillaume 'Vermeille' Sanchez <guillaume.v.sanchez@gmail.com>"]
+license = "file:LICENSE"
+readme = "README.md"
+python = ">=3.6"
+
+[tool.poetry.dependencies]
+python = ">=3.6"
+clang = ">=14.0.0"
+
+[tool.poetry.scripts]
+clang-callgraph = "clang_callgraph:main"
