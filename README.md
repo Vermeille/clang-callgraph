@@ -45,7 +45,7 @@ setting when configuring your project and CMake will automatically generate a `c
 ### Make based projects
 The easiest way to generate the file compile\_commands.json for any make based
 compilation chain is to use [Bear](https://github.com/rizsotto/Bear) and recompile
-with `bear make`.
+with `bear -- make`.
 
 ## Example
 When running the python script, after parsing all the codebase, you are

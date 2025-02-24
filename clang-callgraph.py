@@ -172,9 +172,9 @@ def load_config_file(cfg):
     if cfg['config_filename']:
         with open(cfg['config_filename'], 'r') as yamlfile:
             data = yaml.load(yamlfile, Loader=yaml.FullLoader)
-            cfg['clang_args'] += data['clang_args']
-            cfg['excluded_prefixes'] += data['excluded_prefixes']
-            cfg['excluded_paths'] += data['excluded_paths']
+            keys = ('clang_args', 'excluded_prefixes', 'excluded_paths')
+            for k in keys:
+                cfg[k] += data.get(k, [])
 
 
 def keep_arg(x) -> bool:
@@ -186,10 +186,13 @@ def analyze_source_files(cfg):
     print('reading source files...')
     for cmd in read_compile_commands(cfg['db']):
         index = Index.create()
-        c = [
-            x for x in cmd['command'].split()
-            if keep_arg(x)
-        ] + cfg['clang_args']
+        # https://clang.llvm.org/docs/JSONCompilationDatabase.html#format
+        # either "arguments" or "command" is required.
+        if 'arguments' in cmd:
+            arguments = cmd['arguments']
+        else:
+            arguments = cmd['command'].split()
+        c = [x for x in arguments if keep_arg(x)] + cfg['clang_args']
         tu = index.parse(cmd['file'], c)
         print(cmd['file'])
         if not tu:
